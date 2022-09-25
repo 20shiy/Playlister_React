@@ -18,6 +18,7 @@ import PlaylistCards from './components/PlaylistCards.js';
 import SidebarHeading from './components/SidebarHeading.js';
 import SidebarList from './components/SidebarList.js';
 import Statusbar from './components/Statusbar.js';
+import EditSongModal from './components/EditSongModal';
 
 class App extends React.Component {
     constructor(props) {
@@ -36,7 +37,9 @@ class App extends React.Component {
         this.state = {
             listKeyPairMarkedForDeletion : null,
             currentList : null,
-            sessionData : loadedSessionData
+            sessionData : loadedSessionData,
+            songIdMarkForEdit: null,
+            songIndexMarkForEdit: null
         }
     }
     sortKeyNamePairsByName = (keyNamePairs) => {
@@ -77,7 +80,8 @@ class App extends React.Component {
                 nextKey: prevState.sessionData.nextKey + 1,
                 counter: prevState.sessionData.counter + 1,
                 keyNamePairs: updatedPairs
-            }
+            },
+            songIdMarkForEdit: null
         }), () => {
             // PUTTING THIS NEW LIST IN PERMANENT STORAGE
             // IS AN AFTER EFFECT
@@ -114,7 +118,8 @@ class App extends React.Component {
                 nextKey: prevState.sessionData.nextKey,
                 counter: prevState.sessionData.counter - 1,
                 keyNamePairs: newKeyNamePairs
-            }
+            },
+            songIdMarkForEdit: null
         }), () => {
             // DELETING THE LIST FROM PERMANENT STORAGE
             // IS AN AFTER EFFECT
@@ -185,7 +190,8 @@ class App extends React.Component {
         this.setState(prevState => ({
             listKeyPairMarkedForDeletion : prevState.listKeyPairMarkedForDeletion,
             currentList: null,
-            sessionData: this.state.sessionData
+            sessionData: this.state.sessionData,
+            songIdMarkForEdit: null
         }), () => {
             // AN AFTER EFFECT IS THAT WE NEED TO MAKE SURE
             // THE TRANSACTION STACK IS CLEARED
@@ -257,7 +263,8 @@ class App extends React.Component {
         this.setState(prevState => ({
             currentList: prevState.currentList,
             listKeyPairMarkedForDeletion : keyPair,
-            sessionData: prevState.sessionData
+            sessionData: prevState.sessionData,
+            songIdMarkForEdit: null
         }), () => {
             // PROMPT THE USER
             this.showDeleteListModal();
@@ -274,6 +281,59 @@ class App extends React.Component {
         let modal = document.getElementById("delete-list-modal");
         modal.classList.remove("is-visible");
     }
+
+    hideEditSongModal() {
+        let modal = document.getElementById("edit-song-modal");
+        modal.classList.remove("is-visible");
+    }
+
+    markSongForEdit = (song, songIndex) => {
+        this.setState(prevState => ({
+            currentList: prevState.currentList,
+            listKeyPairMarkedForDeletion : prevState.keyPair,
+            sessionData: prevState.sessionData,
+            songIdMarkForEdit: song,
+            songIndexMarkForEdit: songIndex
+        }), () => {
+            // PROMPT THE USER
+            this.showEditSongModal();
+        });
+    }
+
+    showEditSongModal() {
+        let modal = document.getElementById("edit-song-modal");
+        let curTitle = this.state.songIdMarkForEdit.title;
+        let curArtist = this.state.songIdMarkForEdit.artist;
+        let curYoutubeId = this.state.songIdMarkForEdit.youTubeId;
+        document.getElementById("songTitle").value = curTitle;
+        document.getElementById("songArtist").value = curArtist;
+        document.getElementById("youtubeId").value = curYoutubeId;
+
+        modal.classList.add("is-visible");
+    }
+
+    editSongConfirm = () => {
+        let modal = document.getElementById("edit-song-modal");
+        let newTitle = document.getElementById("songTitle").value;
+        let newArtist = document.getElementById("songArtist").value;
+        let newyoutubeId = document.getElementById("youtubeId").value;
+        let list = this.state.currentList;
+
+        let newSong = {"title":newTitle, "artist":newArtist, "youTubeId":newyoutubeId};
+        list.songs[this.state.songIndexMarkForEdit-1] = newSong;
+
+        this.setState(prevState => ({
+            currentList: list,
+            listKeyPairMarkedForDeletion : prevState.keyPair,
+            sessionData: prevState.sessionData,
+            songIdMarkForEdit: newSong
+        }), () => {
+            this.setStateWithUpdatedList(list);
+        });
+
+        modal.classList.remove("is-visible");
+    }
+
     render() {
         let canAddSong = this.state.currentList !== null;
         let canUndo = this.tps.hasTransactionToUndo();
@@ -303,13 +363,18 @@ class App extends React.Component {
                 />
                 <PlaylistCards
                     currentList={this.state.currentList}
-                    moveSongCallback={this.addMoveSongTransaction} />
+                    moveSongCallback={this.addMoveSongTransaction} 
+                    editSongCallback={this.markSongForEdit}/>
                 <Statusbar 
                     currentList={this.state.currentList} />
                 <DeleteListModal
                     listKeyPair={this.state.listKeyPairMarkedForDeletion}
                     hideDeleteListModalCallback={this.hideDeleteListModal}
                     deleteListCallback={this.deleteMarkedList}
+                />
+                <EditSongModal
+                    editSongCallback={this.editSongConfirm}
+                    hideEditSongModalCallback={this.hideEditSongModal}
                 />
             </div>
         );

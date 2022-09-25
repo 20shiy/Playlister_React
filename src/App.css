@@ -180,8 +180,30 @@ input {
   font-size:20pt;
 }
 
+#frm {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  /* width: 50%; */
+}
+
 
 /* THIS STYLE SHEET MANAGES STYLE FOR OUR MODAL, i.e. DIALOG BOX */
+.edit-modal-root {
+  position: relative;
+  max-width: 1200vw;
+  max-height: 600vh;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  background: var(--swatch-complement);
+  cursor: default;
+  border-width: 2px;
+  border-color: black;
+  border-style: solid;
+  box-shadow: 5px 10px #888888;
+  width: 30%;
+}
 
 .modal {
   position: fixed;
@@ -218,7 +240,7 @@ input {
   border-color: black;
   border-style: solid;
   box-shadow: 5px 10px #888888;
-  width: 70%;
+  width: 70%; 
 }
 
 .modal-root > * {
