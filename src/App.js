@@ -197,6 +197,23 @@ class App extends React.Component {
             this.tps.clearAllTransactions();
         });
     }
+
+    addSong = () => {
+        let list = this.state.currentList;
+
+        let newSong = {"title":"Untitled", "artist":"Unknown", "youTubeId":"dQw4w9WgXcQ"};
+        let songss = list.songs;
+        songss.push(newSong);
+        list.songs = songss;
+
+        this.setState(prevState => ({
+            currentList: list,
+            listKeyPairMarkedForDeletion : prevState.keyPair,
+            sessionData: prevState.sessionData
+        }), () => {
+            this.setStateWithUpdatedList(list);
+        });
+    }
     setStateWithUpdatedList(list) {
         this.setState(prevState => ({
             listKeyPairMarkedForDeletion : prevState.listKeyPairMarkedForDeletion,
@@ -258,6 +275,7 @@ class App extends React.Component {
             this.db.mutationUpdateList(this.state.currentList);
         }
     }
+
     markListForDeletion = (keyPair) => {
         this.setState(prevState => ({
             currentList: prevState.currentList,
@@ -407,6 +425,7 @@ class App extends React.Component {
                     undoCallback={this.undo}
                     redoCallback={this.redo}
                     closeCallback={this.closeCurrentList}
+                    addSongCallback={this.addSong}
                 />
                 <PlaylistCards
                     currentList={this.state.currentList}
