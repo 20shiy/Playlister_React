@@ -9,6 +9,7 @@ import jsTPS from './common/jsTPS.js';
 import MoveSong_Transaction from './transactions/MoveSong_Transaction.js';
 import AddSong_Transaction from './transactions/AddSong_Transaction.js';
 import RemoveSong_Transaction from './transactions/RemoveSong_Transaction.js';
+import EditSong_Transaction from './transactions/EditSong_Transaction.js';
 
 // THESE REACT COMPONENTS ARE MODALS
 import DeleteListModal from './components/DeleteListModal.js';
@@ -279,6 +280,11 @@ class App extends React.Component {
         let transaction = new RemoveSong_Transaction(this, songIndex, song);
         this.tps.addTransaction(transaction);
     }
+
+    addEditSongTransaction = (songIndex, oldSong, newSong) => {
+        let transaction = new EditSong_Transaction(this, songIndex, oldSong, newSong);
+        this.tps.addTransaction(transaction);
+    }
     // THIS FUNCTION BEGINS THE PROCESS OF PERFORMING AN UNDO
     undo = () => {
         if (this.tps.hasTransactionToUndo()) {
@@ -325,12 +331,14 @@ class App extends React.Component {
         modal.classList.remove("is-visible");
     }
 
-    markSongForEdit = (songIndex) => {
+    markSongForEdit = (songIndex, oldSong, newSong) => {
         this.setState(prevState => ({
             currentList: prevState.currentList,
             listKeyPairMarkedForDeletion : prevState.keyPair,
             sessionData: prevState.sessionData,
-            songIndexMarkForEdit: songIndex
+            songIndexMarkForEdit: songIndex,
+            currentSong: oldSong,
+            newSong: newSong
         }), () => {
             // PROMPT THE USER
             this.showEditSongModal();
@@ -339,11 +347,16 @@ class App extends React.Component {
 
     showEditSongModal() {
         let modal = document.getElementById("edit-song-modal");
-        let list = this.state.currentList;
-        let curSong = list.songs[this.state.songIndexMarkForEdit-1];
-        let curTitle = curSong.title;
-        let curArtist = curSong.artist;
-        let curYoutubeId = curSong.youTubeId;
+        // let list = this.state.currentList;
+        // let curSong = list.songs[this.state.songIndexMarkForEdit-1];
+        // let curTitle = curSong.title;
+        // let curArtist = curSong.artist;
+        // let curYoutubeId = curSong.youTubeId;
+        let oldSong = this.state.currentSong;
+        let curTitle = oldSong.title;
+        let curArtist = oldSong.artist;
+        let curYoutubeId = oldSong.youTubeId;
+
         document.getElementById("songTitle").value = curTitle;
         document.getElementById("songArtist").value = curArtist;
         document.getElementById("youtubeId").value = curYoutubeId;
@@ -356,20 +369,30 @@ class App extends React.Component {
         let newTitle = document.getElementById("songTitle").value;
         let newArtist = document.getElementById("songArtist").value;
         let newyoutubeId = document.getElementById("youtubeId").value;
-        let list = this.state.currentList;
+        // let list = this.state.currentList;
 
         let newSong = {"title":newTitle, "artist":newArtist, "youTubeId":newyoutubeId};
-        list.songs[this.state.songIndexMarkForEdit-1] = newSong;
+        // list.songs[this.state.songIndexMarkForEdit-1] = newSong;
+        this.addEditSongTransaction(this.state.songIndexMarkForEdit-1, this.state.currentSong, newSong);
+
+        modal.classList.remove("is-visible");
+    }
+
+    editSongActual = (songIndex, oldSong, newSong) => {
+        let list = this.state.currentList;
+        let songss = list.songs;
+        songss.splice(songIndex, 1, newSong);
+        list.songs = songss;
 
         this.setState(prevState => ({
             currentList: list,
             listKeyPairMarkedForDeletion : prevState.keyPair,
-            sessionData: prevState.sessionData
+            sessionData: prevState.sessionData,
+            newSong: newSong
         }), () => {
             this.setStateWithUpdatedList(list);
         });
 
-        modal.classList.remove("is-visible");
     }
 
     markSongForRemove = (songIndex, song) => {
