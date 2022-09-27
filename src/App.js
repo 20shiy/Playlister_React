@@ -7,6 +7,8 @@ import jsTPS from './common/jsTPS.js';
 
 // OUR TRANSACTIONS
 import MoveSong_Transaction from './transactions/MoveSong_Transaction.js';
+import AddSong_Transaction from './transactions/AddSong_Transaction.js';
+import RemoveSong_Transaction from './transactions/RemoveSong_Transaction.js';
 
 // THESE REACT COMPONENTS ARE MODALS
 import DeleteListModal from './components/DeleteListModal.js';
@@ -41,7 +43,9 @@ class App extends React.Component {
             sessionData : loadedSessionData,
             // songIdMarkForEdit: null,
             currentSong: null,
-            songIndexMarkForEdit: null
+            songIndexMarkForEdit: null,
+            newSong: null,
+            songBeRemoved: null
         }
     }
     sortKeyNamePairsByName = (keyNamePairs) => {
@@ -198,14 +202,21 @@ class App extends React.Component {
         });
     }
 
-    addSong = () => {
+    addSongInitial = () => {
         let list = this.state.currentList;
 
         let newSong = {"title":"Untitled", "artist":"Unknown", "youTubeId":"dQw4w9WgXcQ"};
         let songss = list.songs;
-        songss.push(newSong);
-        list.songs = songss;
+        let len = songss.length;
+        this.addSongTransaction(len, newSong);
+    }
 
+    addSong = (songIndex, song) => {
+        console.log(songIndex + " " + song);
+        let list = this.state.currentList;
+        let songss = list.songs;
+        songss.splice(songIndex, 0, song);
+        list.songs = songss;
         this.setState(prevState => ({
             currentList: list,
             listKeyPairMarkedForDeletion : prevState.keyPair,
@@ -214,6 +225,7 @@ class App extends React.Component {
             this.setStateWithUpdatedList(list);
         });
     }
+
     setStateWithUpdatedList(list) {
         this.setState(prevState => ({
             listKeyPairMarkedForDeletion : prevState.listKeyPairMarkedForDeletion,
@@ -255,6 +267,16 @@ class App extends React.Component {
     // THIS FUNCTION ADDS A MoveSong_Transaction TO THE TRANSACTION STACK
     addMoveSongTransaction = (start, end) => {
         let transaction = new MoveSong_Transaction(this, start, end);
+        this.tps.addTransaction(transaction);
+    }
+
+    addSongTransaction = (songIndex, song) => {
+        let transaction = new AddSong_Transaction(this, songIndex, song);
+        this.tps.addTransaction(transaction);
+    }
+
+    addDeleteSongTransaction = (songIndex, song) => {
+        let transaction = new RemoveSong_Transaction(this, songIndex, song);
         this.tps.addTransaction(transaction);
     }
     // THIS FUNCTION BEGINS THE PROCESS OF PERFORMING AN UNDO
@@ -317,9 +339,6 @@ class App extends React.Component {
 
     showEditSongModal() {
         let modal = document.getElementById("edit-song-modal");
-        // let curTitle = this.state.songIdMarkForEdit.title;
-        // let curArtist = this.state.songIdMarkForEdit.artist;
-        // let curYoutubeId = this.state.songIdMarkForEdit.youTubeId;
         let list = this.state.currentList;
         let curSong = list.songs[this.state.songIndexMarkForEdit-1];
         let curTitle = curSong.title;
@@ -353,16 +372,13 @@ class App extends React.Component {
         modal.classList.remove("is-visible");
     }
 
-    markSongForRemove = (songIndex) => {
-        let list = this.state.currentList;
-        let curSong = list.songs[songIndex-1];
+    markSongForRemove = (songIndex, song) => {
         this.setState(prevState => ({
             currentList: prevState.currentList,
             listKeyPairMarkedForDeletion : prevState.keyPair,
             sessionData: prevState.sessionData,
-            // songIdMarkForEdit: song,
-            currentSong: curSong,
-            songIndexMarkForEdit: songIndex
+            songIndexMarkForEdit: songIndex,
+            songBeRemoved: song
         }), () => {
             // PROMPT THE USER
             this.showDeleteSongModal();
@@ -370,21 +386,27 @@ class App extends React.Component {
 
     }
 
-    deleteSongConfirm = () => {
-        let modal = document.getElementById("delete-song-modal");
+    deleteSongActual = (songIndex, song) => {
         let list = this.state.currentList;
-        let songsss = list.songs;
-        songsss.splice(this.state.songIndexMarkForEdit-1, 1);
-        list.songs = songsss;
+        let songsList = list.songs;
+        songsList.splice(songIndex, 1);
+
+        list.songs = songsList;
 
         this.setState(prevState => ({
             currentList: list,
             listKeyPairMarkedForDeletion : prevState.keyPair,
-            sessionData: prevState.sessionData
+            sessionData: prevState.sessionData,
+            songBeRemoved: song
         }), () => {
             this.setStateWithUpdatedList(list);
         });
-        
+
+    }
+
+    deleteSongConfirm = () => {
+        let modal = document.getElementById("delete-song-modal");
+        this.addDeleteSongTransaction(this.state.songIndexMarkForEdit-1, this.state.songBeRemoved);
         modal.classList.remove("is-visible");
     }
 
@@ -425,7 +447,7 @@ class App extends React.Component {
                     undoCallback={this.undo}
                     redoCallback={this.redo}
                     closeCallback={this.closeCurrentList}
-                    addSongCallback={this.addSong}
+                    addSongCallback={this.addSongInitial}
                 />
                 <PlaylistCards
                     currentList={this.state.currentList}
