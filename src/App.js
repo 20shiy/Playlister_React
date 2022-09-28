@@ -538,7 +538,7 @@ class App extends React.Component {
                     hideEditSongModalCallback={this.hideEditSongModal}
                 />
                 <DeleteSongModal 
-                    selectedSong={this.state.currentSong}
+                    selectedSong={this.state.songBeRemoved}
                     deleteSongCallback={this.deleteSongConfirm}
                     hideDeleteSongModalCallback={this.hideDeleteSongModal}
                 />
