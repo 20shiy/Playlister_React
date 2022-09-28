@@ -46,7 +46,8 @@ class App extends React.Component {
             currentSong: null,
             songIndexMarkForEdit: null,
             newSong: null,
-            songBeRemoved: null
+            songBeRemoved: null,
+            toggleOpen: false
         }
     }
     sortKeyNamePairsByName = (keyNamePairs) => {
@@ -204,27 +205,33 @@ class App extends React.Component {
     }
 
     addSongInitial = () => {
-        let list = this.state.currentList;
+        if(this.state.currentList !== null) {
+            let list = this.state.currentList;
 
-        let newSong = {"title":"Untitled", "artist":"Unknown", "youTubeId":"dQw4w9WgXcQ"};
-        let songss = list.songs;
-        let len = songss.length;
-        this.addSongTransaction(len, newSong);
+            let newSong = {"title":"Untitled", "artist":"Unknown", "youTubeId":"dQw4w9WgXcQ"};
+            let songss = list.songs;
+            let len = songss.length;
+            this.addSongTransaction(len, newSong);
+        }
+        
     }
 
     addSong = (songIndex, song) => {
-        console.log(songIndex + " " + song);
-        let list = this.state.currentList;
-        let songss = list.songs;
-        songss.splice(songIndex, 0, song);
-        list.songs = songss;
-        this.setState(prevState => ({
-            currentList: list,
-            listKeyPairMarkedForDeletion : prevState.keyPair,
-            sessionData: prevState.sessionData
-        }), () => {
-            this.setStateWithUpdatedList(list);
-        });
+        if(this.state.currentList !== null) {
+            console.log(songIndex + " " + song);
+            let list = this.state.currentList;
+            let songss = list.songs;
+            songss.splice(songIndex, 0, song);
+            list.songs = songss;
+            this.setState(prevState => ({
+                currentList: list,
+                listKeyPairMarkedForDeletion : prevState.keyPair,
+                sessionData: prevState.sessionData
+            }), () => {
+                this.setStateWithUpdatedList(list);
+            });
+        }
+        
     }
 
     setStateWithUpdatedList(list) {
@@ -308,7 +315,8 @@ class App extends React.Component {
         this.setState(prevState => ({
             currentList: prevState.currentList,
             listKeyPairMarkedForDeletion : keyPair,
-            sessionData: prevState.sessionData
+            sessionData: prevState.sessionData,
+            toggleOpen:true
         }), () => {
             // PROMPT THE USER
             this.showDeleteListModal();
@@ -321,14 +329,30 @@ class App extends React.Component {
         modal.classList.add("is-visible");
     }
     // THIS FUNCTION IS FOR HIDING THE MODAL
-    hideDeleteListModal() {
+    hideDeleteListModal = () => {
         let modal = document.getElementById("delete-list-modal");
-        modal.classList.remove("is-visible");
+        this.setState(prevState => ({
+            toggleOpen:false
+        }), () => {
+            // PROMPT THE USER
+            modal.classList.remove("is-visible");
+        });
+        // this.setState(prevState => ({
+        //     toggleOpen:false
+        // })), () => {
+        //     modal.classList.remove("is-visible");
+        // }
     }
 
-    hideEditSongModal() {
+    hideEditSongModal = () => {
         let modal = document.getElementById("edit-song-modal");
-        modal.classList.remove("is-visible");
+        this.setState(prevState => ({
+            toggleOpen:false
+        }), () => {
+            // PROMPT THE USER
+            modal.classList.remove("is-visible");
+        });
+        // modal.classList.remove("is-visible");
     }
 
     markSongForEdit = (songIndex, oldSong, newSong) => {
@@ -338,7 +362,8 @@ class App extends React.Component {
             sessionData: prevState.sessionData,
             songIndexMarkForEdit: songIndex,
             currentSong: oldSong,
-            newSong: newSong
+            newSong: newSong,
+            toggleOpen: true
         }), () => {
             // PROMPT THE USER
             this.showEditSongModal();
@@ -374,8 +399,14 @@ class App extends React.Component {
         let newSong = {"title":newTitle, "artist":newArtist, "youTubeId":newyoutubeId};
         // list.songs[this.state.songIndexMarkForEdit-1] = newSong;
         this.addEditSongTransaction(this.state.songIndexMarkForEdit-1, this.state.currentSong, newSong);
-
-        modal.classList.remove("is-visible");
+        this.setState(prevState => ({
+            toggleOpen: false
+        }), () => {
+            // PROMPT THE USER
+            // this.showEditSongModal();
+            modal.classList.remove("is-visible");
+        });
+        
     }
 
     editSongActual = (songIndex, oldSong, newSong) => {
@@ -401,7 +432,8 @@ class App extends React.Component {
             listKeyPairMarkedForDeletion : prevState.keyPair,
             sessionData: prevState.sessionData,
             songIndexMarkForEdit: songIndex,
-            songBeRemoved: song
+            songBeRemoved: song,
+            toggleOpen:true
         }), () => {
             // PROMPT THE USER
             this.showDeleteSongModal();
@@ -430,12 +462,24 @@ class App extends React.Component {
     deleteSongConfirm = () => {
         let modal = document.getElementById("delete-song-modal");
         this.addDeleteSongTransaction(this.state.songIndexMarkForEdit-1, this.state.songBeRemoved);
-        modal.classList.remove("is-visible");
+        this.setState(prevState => ({
+            toggleOpen:false
+        }), () => {
+            // PROMPT THE USER
+            modal.classList.remove("is-visible");
+        });
+        
     }
 
-    hideDeleteSongModal() {
+    hideDeleteSongModal = () => {
         let modal = document.getElementById("delete-song-modal");
-        modal.classList.remove("is-visible");
+        this.setState(prevState => ({
+            toggleOpen:false
+        }), () => {
+            // PROMPT THE USER
+            modal.classList.remove("is-visible");
+        });
+        // modal.classList.remove("is-visible");
 
     }
 
@@ -449,11 +493,15 @@ class App extends React.Component {
         let canUndo = this.tps.hasTransactionToUndo();
         let canRedo = this.tps.hasTransactionToRedo();
         let canClose = this.state.currentList !== null;
+        let canAddList = this.state.currentList == null;
+        let toggle = this.state.toggleOpen === true;
         return (
             <div id="root">
                 <Banner />
                 <SidebarHeading
                     createNewListCallback={this.createNewList}
+                    canAddList={canAddList}
+                    toggle={toggle}
                 />
                 <SidebarList
                     currentList={this.state.currentList}
@@ -467,6 +515,7 @@ class App extends React.Component {
                     canUndo={canUndo}
                     canRedo={canRedo}
                     canClose={canClose} 
+                    toggle={toggle}
                     undoCallback={this.undo}
                     redoCallback={this.redo}
                     closeCallback={this.closeCurrentList}

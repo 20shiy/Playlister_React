@@ -145,6 +145,25 @@ body {
   cursor: pointer;
 }
 
+.toolbar-button {
+  font-size:36pt;
+  border-width: 1px;
+  border-color: black;
+  border-style: solid;
+  box-shadow: 2px 4px #888888;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.disabled {
+  background-color: lightgray;
+  cursor: not-allowed;
+}
+
+.disabled:hover {
+  color: var(--swatch-neutral);
+}
+
 .playlister-button:hover {
   cursor: pointer;
   color:black;
