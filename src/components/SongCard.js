@@ -41,7 +41,9 @@ export default class SongCard extends React.Component {
         event.preventDefault();
         let target = event.target;
         let targetId = target.id;
+        
         targetId = targetId.substring(target.id.indexOf("-") + 1);
+        // console.log(targetId);
         let sourceId = event.dataTransfer.getData("song");
         sourceId = sourceId.substring(sourceId.indexOf("-") + 1);
         
@@ -95,7 +97,7 @@ export default class SongCard extends React.Component {
                 onClick={this.handleClick}
                 draggable="true"
             >
-                <div>{num}. <a id={'song-' + num} href={youtubeId}> {song.title} by {song.artist}</a></div>
+                <div id={'song-' + num}>{num}. <a id={'song-' + num} href={youtubeId}> {song.title} by {song.artist}</a></div>
    
                 <input
                     type="button"

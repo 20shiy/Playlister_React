@@ -16,13 +16,13 @@ export default class EditToolbar extends React.Component {
         } 
 
         let undoDisable = false;
-        if (!canUndo || toggle) {
+        if (!canUndo || toggle || !canClose) {
             undoClass += " disabled";
             undoDisable = true;
         } 
 
         let redoDisable = false;
-        if (!canRedo || toggle) {
+        if (!canRedo || toggle || !canClose) {
             redoClass += " disabled";
             redoDisable = true;
         } 

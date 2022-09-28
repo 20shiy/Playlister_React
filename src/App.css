@@ -22,7 +22,7 @@ body {
 #root {
   background-color: var(--swatch-primary);
   font-family: 'Tangerine', serif;
-  position: absolute;
+  position: fixed;
   width: 80%;
   left: 10%;
   height:90%;
@@ -196,15 +196,23 @@ body {
 }
 
 input {
-  font-size:20pt;
+  font-size:20pt
 }
 
 #frm {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: space-around;
   /* width: 50%; */
 }
+
+.frm-component {
+  width: 80%;
+}
+
+/* .edit-song-modal > input {
+  width: 20px
+} */
 
 
 /* THIS STYLE SHEET MANAGES STYLE FOR OUR MODAL, i.e. DIALOG BOX */
@@ -221,7 +229,7 @@ input {
   border-color: black;
   border-style: solid;
   box-shadow: 5px 10px #888888;
-  width: 30%;
+  width: 40%;
 }
 
 .modal {
