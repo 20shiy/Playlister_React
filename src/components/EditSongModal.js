@@ -14,9 +14,9 @@ export default class EditSongModal extends Component {
                         <div className="modal-center-content">
                             <form id="frm">
                                 <div className="frm-component">
-                                    <label for="songTitle">Title:</label><br/>
-                                    <label for="songArtist">Artist:</label><br/>
-                                    <label for="youtubeId">Youtube ID:</label>
+                                    <label htmlFor="songTitle">Title:</label><br/>
+                                    <label htmlFor="songArtist">Artist:</label><br/>
+                                    <label htmlFor="youtubeId">Youtube ID:</label>
                                 </div>
                                 <div>
                                     <input className="frm-component"type="text" id="songTitle" name="songTitle"/><br/>

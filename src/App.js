@@ -488,6 +488,24 @@ class App extends React.Component {
         modal.classList.add("is-visible");
     }
 
+    handleKeyDown = (event) => {
+        if(event.ctrlKey) {
+            if(event.keyCode === 90) {
+                console.log("90");
+                if(this.tps.hasTransactionToUndo()) {
+                    this.undo();
+                }
+                event.preventDefault();
+            } else if(event.keyCode === 89) {
+                console.log("89")
+                if(this.tps.hasTransactionToRedo()) {
+                    this.redo();
+                }
+            }
+        }
+
+    }
+
     render() {
         let canAddSong = this.state.currentList !== null;
         let canUndo = this.tps.hasTransactionToUndo();
@@ -496,7 +514,7 @@ class App extends React.Component {
         let canAddList = this.state.currentList == null;
         let toggle = this.state.toggleOpen === true;
         return (
-            <div id="root">
+            <div id="root" onKeyDown={this.handleKeyDown} tabIndex="0">
                 <Banner />
                 <SidebarHeading
                     createNewListCallback={this.createNewList}
