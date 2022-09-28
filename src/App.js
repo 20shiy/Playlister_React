@@ -218,7 +218,7 @@ class App extends React.Component {
 
     addSong = (songIndex, song) => {
         if(this.state.currentList !== null) {
-            console.log(songIndex + " " + song);
+            // console.log(songIndex + " " + song);
             let list = this.state.currentList;
             let songss = list.songs;
             songss.splice(songIndex, 0, song);
